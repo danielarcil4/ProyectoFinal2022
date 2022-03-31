@@ -9,5 +9,6 @@
         <file>sprites/Botons.png</file>
         <file>sprites/Menu.png</file>
         <file>sprites/player2.png</file>
+        <file>sprites/finishLine.png</file>
     </qresource>
 </RCC>

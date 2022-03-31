@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //Main menu
     textEdit1 = new QPlainTextEdit(this);
     textEdit1->setVisible(false);
 
@@ -41,6 +42,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+//move and collition with players
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     for(short int i=0;i<players.length();i++)
@@ -54,39 +56,52 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::startGame()
 {
-    scene = new QGraphicsScene;
+    //Size window
+    this->setGeometry(0,20,1924,1000);
 
+    //scene
+    scene = new QGraphicsScene;
     scene->setBackgroundBrush(QBrush(QImage(":/sprites/MapGame.jpeg")));
     //scene->setSceneRect(getScenePosX(),getScenePosY(),ui->graphicsView->width(),ui->graphicsView->height());
 
+    //create QGraphicsView
+    view = new QGraphicsView(scene,this);
+    view->setGeometry(0,0,1920,1080);
+    view->show();
 
+    //player
     players.push_back(new player(80,50,":/sprites/player1.png",1));
     players.push_back(new player(80,50,":/sprites/player2.png",2));
 
     players[0]->setPos(-400,625);
     players[1]->setPos(-360,625);
 
+    for(short int i=0;i<players.length();i++)
+        scene->addItem(players[i]);
+
+    //Map and enemies
     createMap();
     createEnemies();
 
+    //extras
     clock = new ownClock("TIME: ",0);
     scene->addItem(clock);
     clock->setPos(0,0);
 
-    for(short int i=0;i<players.length();i++)
-        scene->addItem(players[i]);
+    finish = new finishLine(300,200,":/sprites/finishLine.png");
+    scene->addItem(finish);
+    finish->setPos(4000,505);
+
+    //connect and timers
     connect(moving,SIGNAL(timeout()),this,SLOT(move()));
+    connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
     moving->start(50);
-
-    this->setGeometry(0,20,1930,1000);
-
-    view = new QGraphicsView(scene,this);
-    view->setGeometry(0,0,1920,1080);
-    view->show();
+    WorL->start(1000);
 }
 
 void MainWindow::createMap()
 {
+    //first piramides
     for (short int numPiramides=0;numPiramides<3;numPiramides++)
         for(short int row=0,y=625-(40*numPiramides);row<numRow+numPiramides;row++,y+=40)
             for(short int col=0,x=0;col<numCol+(numRow+numPiramides)*2;x+=40,col++){
@@ -103,7 +118,7 @@ void MainWindow::createMap()
                 }
             }
 
-
+    //middle piramide
     for(short int row=0,y=545;row<numRow+2;row++,y+=40)
         for(short int col=0,x=1700;col<numCol+4;x+=40,col++)
             if(col>=numRow+2-row and col<=numRow+2+row ){
@@ -111,6 +126,7 @@ void MainWindow::createMap()
                 solidBlocks.back()->setPos(x,y);
             }
 
+    //last piramides
     for (short int numPiramides=2;numPiramides>=0;numPiramides--)
         for(short int row=0,y=625-(40*numPiramides);row<numRow+numPiramides;row++,y+=40)
             for(short int col=0,x=3500;col<numCol+(numRow+numPiramides)*2;x+=40,col++){
@@ -126,56 +142,84 @@ void MainWindow::createMap()
                 }
             }
 
-    for(short int I=0;I<players.length();I++)
-        for(short int i=0;i<solidBlocks.length();i++){
-            solidBlocks[i]->setPtrPlayer(players[I]);
-            scene->addItem(solidBlocks[i]);
-        }
+    //add to scene
+    for(short int i=0;i<solidBlocks.length();i++){
+        solidBlocks[i]->setPtrPlayers(players);
+        scene->addItem(solidBlocks[i]);
+    }
 
 }
 
 void MainWindow::createEnemies()
 {
     //SET BIRD ENEMIES
-    for(short int I=0;I<players.length();I++)
-        for(short int i=0,x=1530;i<2;i++,x+=650){
-            birdEnemies.push_back(new bird(70,70,":/sprites/EnemyBird.png",x,300));
-            birdEnemies.back()->setPtrPlayer(players[I]);
-            scene->addItem(birdEnemies.back());
-        }
+    for(short int i=0,x=1530;i<2;i++,x+=650){
+        birdEnemies.push_back(new bird(70,70,":/sprites/EnemyBird.png",x,300));
+        birdEnemies.back()->setPtrPlayers(players);
+        scene->addItem(birdEnemies.back());
+    }
+
     //SET SCORPION ENEMIES
     for(short int i=0,x=-120;i<3;i++,x+=360){
         scorpionEnemies.push_back(new scorpion(50,50,":/sprites/scorpion.PNG"));
         scorpionEnemies.back()->setPos(x,655);
+        scorpionEnemies.back()->setPtrPlayers(players);
         scene->addItem(scorpionEnemies.back()->getBullet());
         scene->addItem(scorpionEnemies.back());    
     }
+
     //adjust Vy of third scorpion
     scorpionEnemies.back()->setVy(28);
 
     //SET MARSH ENEMIES
-    for(short int I=0;I<players.length();I++)
-        for(short int i=0,x=2925;i<2;i++,x+=450){
-            marshEnemies.push_back(new marsh(20,200,":/sprites/marsh.png"));
-            marshEnemies.back()->setPos(x,695);
-            marshEnemies.back()->setPtrPlayer(players[I]);
-            scene->addItem(marshEnemies.back());
-        }
-    for(short int I=0;I<players.length();I++)
-        for(short int i=0,x=3740;i<3;i++,x+=200){
-            marshEnemies.push_back(new marsh(20,200,":/sprites/marsh.png"));
-            marshEnemies.back()->setPos(x,695);
-            marshEnemies.back()->setPtrPlayer(players[I]);
-            scene->addItem(marshEnemies.back());
-        }
+    for(short int i=0,x=2925;i<2;i++,x+=450){
+        marshEnemies.push_back(new marsh(20,200,":/sprites/marsh.png"));
+        marshEnemies.back()->setPos(x,695);
+        marshEnemies.back()->setPtrPlayers(players);
+        scene->addItem(marshEnemies.back());
+    }
+    for(short int i=0,x=3740;i<3;i++,x+=200){
+        marshEnemies.push_back(new marsh(20,200,":/sprites/marsh.png"));
+        marshEnemies.back()->setPos(x,695);
+        marshEnemies.back()->setPtrPlayers(players);
+        scene->addItem(marshEnemies.back());
+    }
 }
 
-
+//moving scene and signs
 void MainWindow::move()
 {
     setScenePosX(getScenePosX()+2);
+    clock->setPos(clock->x()+2,clock->y());
     scene->setSceneRect(getScenePosX(),getScenePosY(),view->width()-5,view->height()-5);
 }
+
+void MainWindow::winnerOrLoser(){
+    for (short int I=0;I<players.length();I++ ){
+        if(players[I]->x()>=finish->x())
+            switch (players[I]->getNumberPlayer()) {
+                case 1:
+                    //winner = new QLabel("player 1 winner",this);
+                    break;
+                case 2:
+                    //winner = new QLabel("player 2 winner",this);
+                    break;
+            }
+        else if(players[I]->x()<getScenePosX())
+            switch (players[I]->getNumberPlayer()) {
+                case 1:
+                    //winner = new QLabel("player 1 lost",this);
+                    break;
+                case 2:
+                    //winner = new QLabel("player 2 lost",this);
+                    break;
+            }
+    }
+
+}
+
+//other funtions
+//----------------------------------------------------------------------------------------------------------------------
 
 int MainWindow::getScenePosX() const
 {
@@ -192,15 +236,27 @@ int MainWindow::getScenePosY() const
     return scenePosY;
 }
 
-//delete all but one botton and label
 void MainWindow::setScenePosY(int value)
 {
     scenePosY = value;
 }
 
+QString MainWindow::getDifficulty() const
+{
+    return difficulty;
+}
+
+void MainWindow::setDifficulty(const QString &value)
+{
+    difficulty = value;
+}
+
+//clear screen
+//----------------------------------------------------------------------------------------------------------------------
+
+//delete all but one botton ,label and background
 void MainWindow::deleteMenu()
 {
-    //ui->label_2->deleteLater();
     ui->verticalLayout->deleteLater();
     ui->pushButton->deleteLater();
     ui->pushButton_3->deleteLater();
@@ -218,6 +274,9 @@ void MainWindow::deleteNewGame()
     delete label_3;
     delete textEdit1;
 }
+
+//Menu
+//----------------------------------------------------------------------------------------------------------------------
 
 //new game
 void MainWindow::on_pushButton_clicked()
@@ -255,17 +314,30 @@ void MainWindow::on_pushButton_clicked()
 
 }
 
+//save new game
 void MainWindow::saveNewGame()
 {
-    QFile file("../Proyectofinal2022/DB/games.txt");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
+    if(textEdit1->toPlainText()==0)
+        textEdit1->setPlaceholderText("This field can't be empty");
 
-    QTextStream write(&file);
-    write<<textEdit1->toPlainText()<<'\n'<<"-400,625,0,3,100,"<<comboBox->currentText();
+    if(textEdit2->toPlainText()==0)
+        textEdit2->setPlaceholderText("This field can't be empty");
 
-    deleteNewGame();
-    startGame();
+    else{  
+        QFile file("../Proyectofinal2022/DB/games.txt");
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return;
+
+        QTextStream write(&file);
+
+        //player 1
+        write<<textEdit1->toPlainText()<<'\n'<<"-400,625,0,"<<comboBox->currentText()<<'\n';
+        //player 2
+        write<<textEdit2->toPlainText()<<'\n'<<"-400,625,0,"<<comboBox->currentText()<<'\n';
+
+        deleteNewGame();
+        startGame();
+    }
 }
 
 //load game
@@ -280,13 +352,14 @@ void MainWindow::on_pushButton_4_clicked()
     QTextStream read(&file);
     QString line = read.readLine();
     QList<QString> loadGame;
+
     while (!line.isNull()) {
         comboBox->addItem(line);
         line = read.readLine();
         loadGame = line.split(',');
         players[0]->setPos(loadGame[0].toInt(nullptr,10),loadGame[1].toInt(nullptr,10));
         clock->setTimeClock(loadGame[2].toInt(nullptr,10));
-
+        setDifficulty(loadGame[3]);
         line = read.readLine();
     }
 
@@ -296,3 +369,5 @@ void MainWindow::on_pushButton_4_clicked()
     ui->pushButton_2->setGeometry(80,0,300,50);
     ui->pushButton_2->setText("Load");
 }
+
+

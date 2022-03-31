@@ -2,6 +2,16 @@
 #include <QDebug>
 
 
+QList<player *> scorpion::getPtrPlayers() const
+{
+    return ptrPlayers;
+}
+
+void scorpion::setPtrPlayers(const QList<player *> &value)
+{
+    ptrPlayers = value;
+}
+
 scorpion::scorpion(int height, int width, QString sprite):basicObject(height,width,sprite)
 {
     connect(fire,&QTimer::timeout,this,&scorpion::shot);
@@ -20,6 +30,11 @@ scorpion::~scorpion()
 
 void scorpion::shot()
 {
+    for(short int i=0;i<getPtrPlayers().length();i++)
+        if(abs(getBullet()->x()-getPtrPlayers()[i]->x())<20 and abs(getBullet()->y()-getPtrPlayers()[i]->y())<20)
+            getPtrPlayers()[i]->getDamage();
+    //qDebug()<<abs(getBullet()->x()-getPtrPlayers()[0]->x());
+
     setT(getT()+0.2);
     getBullet()->setPos(getBullet()->x()+Vx*cos(ANGLE*3.1416/180)*getT(),getBullet()->y()-Vy*sin(ANGLE*3.1416/180)*getT()+4.9*pow(getT(),2));
     getBullet()->setBrush(Qt::lightGray);

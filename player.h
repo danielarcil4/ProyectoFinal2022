@@ -12,12 +12,13 @@ private:
     int Vy=0,Vx=10,floor=625;
     int collition=0,numberPlayer=0;
     QTimer *fall = new QTimer;
-    QTimer *timer = new QTimer;
+    QTimer *recover = new QTimer;
 public:
     player(int height,int width,QString sprite,int numberPlayer);
     ~player();
 
     void walk(int key);
+    void getDamage();
 
     int getVy() const;
     void setVy(int value);
@@ -36,7 +37,7 @@ public:
 
 public slots:
     void gravity();
-    void collidingWithEnemies();
+    void recoverVel();
 };
 
 #endif // PLAYER_H

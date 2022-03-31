@@ -1,34 +1,32 @@
 #include "bird.h"
-#include<QDebug>
-
 
 bird::bird(int height, int width, QString sprite,int x, int y):basicObject(height, width, sprite)
 {
     setPivotPointX(x);
     setPivotPointY(y);
     connect(move,&QTimer::timeout,this,&bird::Fly);
-    connect(beatUp,&QTimer::timeout,this,&bird::doDamage);
     move->start(100);
 }
 
 bird::~bird()
 {
-    delete beatUp;
     delete move;
     delete pixmap;
 }
 
 void bird::beatUpPlayer()
 {
-    if(abs(x()-getPtrPlayer()->x())<50 and abs(y()-getPtrPlayer()->y())<50){
-        beatUp->start(1500);
-        //lifeLost->play();
-    }
+    for(short int i=0;i<getPtrPlayers().length();i++)
+        if(abs(x()-getPtrPlayers()[i]->x())<50 and abs(y()-getPtrPlayers()[i]->y())<50){
+            getPtrPlayers()[i]->getDamage();
+            //lifeLost->play();
+        }
 }
 
 void bird::Fly()
 {
     beatUpPlayer();
+
     if(getAngle()>=MAX_ANGLE)
         setChangeAngle(getChangeAngle()*-1);
     if(getAngle()<=-MAX_ANGLE)
@@ -47,12 +45,6 @@ void bird::Fly()
     setAngle(getAngle()+getChangeAngle());
     setX(getPivotPointX()+getLenght()*sin(getAngle()*3.1416/180));
     setY(getPivotPointY()+getLenght()*cos(getAngle()*3.1416/180));
-}
-
-void bird::doDamage()
-{
-    qDebug()<<"lost life";
-    beatUp->stop();
 }
 
 int bird::getAngle() const
@@ -104,12 +96,13 @@ int bird::getPivotPointY() const
 {
     return pivotPointY;
 }
-player *bird::getPtrPlayer() const
+
+QList<player *> bird::getPtrPlayers() const
 {
-    return ptrPlayer;
+    return ptrPlayers;
 }
 
-void bird::setPtrPlayer(player *value)
+void bird::setPtrPlayers(const QList<player *> &value)
 {
-    ptrPlayer = value;
+    ptrPlayers = value;
 }

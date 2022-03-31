@@ -7,17 +7,15 @@
 class marsh:public basicObject
 {
 private:
-    player *ptrPlayer;
+    QList <player*> ptrPlayers;
     QTimer *timer = new QTimer;
-    QTimer *returning = new QTimer;
 public:
     marsh(int height,int width,QString sprite);
     ~marsh();
 
-    player *getPtrPlayer() const;
-    void setPtrPlayer(player *value);
+    QList<player *> getPtrPlayers() const;
+    void setPtrPlayers(const QList<player *> &value);
 public slots:
-    void returnSpeed();
     void slowDown();
 };
 

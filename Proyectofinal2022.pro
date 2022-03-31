@@ -12,6 +12,7 @@ SOURCES += \
     basicobject.cpp \
     basicsign.cpp \
     bird.cpp \
+    finishline.cpp \
     main.cpp \
     mainwindow.cpp \
     marsh.cpp \
@@ -24,6 +25,7 @@ HEADERS += \
     basicobject.h \
     basicsign.h \
     bird.h \
+    finishline.h \
     mainwindow.h \
     marsh.h \
     ownclock.h \

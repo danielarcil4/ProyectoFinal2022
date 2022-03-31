@@ -8,7 +8,7 @@
 class solidBlock: public basicObject
 {
 private:
-    player *ptrPlayer;
+    QList<player*> ptrPlayers;
     QTimer *timer = new QTimer;
 public:
     solidBlock(int height,int width,QString sprite);
@@ -16,8 +16,8 @@ public:
 
     void collidingInMove(int key);
 
-    player *getPtrPlayer() const;
-    void setPtrPlayer(player *value);
+    QList<player *> getPtrPlayers() const;
+    void setPtrPlayers(const QList<player *> &value);
 
 public slots:
     void updateFloor();

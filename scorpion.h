@@ -4,7 +4,10 @@
 #include <QTimer>
 #include <math.h>
 #include <QPainter>
+
 #include "basicobject.h"
+#include "player.h"
+
 #define ANGLE 40
 
 class scorpion:public basicObject
@@ -14,7 +17,9 @@ private:
     QTimer *moving = new QTimer;
     float t=0.0;
     int Vx=8,Vy=25;
+    QList<player *> ptrPlayers;
     QGraphicsEllipseItem *bullet = new QGraphicsEllipseItem(x(),y(),10,10);
+
 public:
     scorpion(int height,int width,QString sprite);
    ~scorpion();
@@ -30,6 +35,9 @@ public:
 
     int getVy() const;
     void setVy(int value);
+
+    QList<player *> getPtrPlayers() const;
+    void setPtrPlayers(const QList<player *> &value);
 
 public slots:
     void shot();

@@ -11,9 +11,8 @@ class bird:public basicObject
 {
 private:
     int angle = 0,lenght=300,changeAngle=5,pivotPointX=0,pivotPointY=0;
-    player *ptrPlayer;
+    QList<player*> ptrPlayers;
     QTimer *move = new QTimer;
-    QTimer *beatUp = new QTimer;
 public:
     bird(int height,int width,QString sprite,int x,int y);
     ~bird();
@@ -37,12 +36,11 @@ public:
 
     void setPivotPointY(int value);
 
-    player *getPtrPlayer() const;
-    void setPtrPlayer(player *value);
+    QList<player *> getPtrPlayers() const;
+    void setPtrPlayers(const QList<player *> &value);
 
 private slots:
     void Fly();
-    void doDamage();
 };
 
 #endif // BIRD_H

@@ -17,6 +17,7 @@
 #include "scorpion.h"
 #include "marsh.h"
 #include "ownclock.h"
+#include "finishline.h"
 
 #define numRow 2
 #define numCol numRow*2
@@ -32,18 +33,28 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    //game
     void keyPressEvent(QKeyEvent *event);
     void startGame();
+
+    //create
     void createMap();
     void createEnemies();
+
+    //delete
     void deleteNewGame();
     void deleteMenu();
 
+    //others funtions
     int getScenePosX() const;
     void setScenePosX(int value);
 
     int getScenePosY() const;
     void setScenePosY(int value);
+
+    QString getDifficulty() const;
+    void setDifficulty(const QString &value);
 
 private:
     Ui::MainWindow *ui;
@@ -51,8 +62,10 @@ private:
     QGraphicsView *view;
     int scenePosX=-500,scenePosY=0;
 
-    QList<player*> players;
+    //extras
     ownClock *clock;
+    finishLine *finish;
+    QString difficulty="";
 
     //menu
     QPlainTextEdit *textEdit1;
@@ -60,16 +73,23 @@ private:
     QComboBox *comboBox;
     QLabel *label_3;
     QLabel *label_4;
+    QLabel *winner;
 
+    //Lists
+    QList<player*> players;
     QList<scorpion*> scorpionEnemies;
     QList<bird*> birdEnemies;
     QList<marsh*> marshEnemies;
     QList<solidBlock*> solidBlocks;
+
+    //timers
     QTimer *moving = new QTimer;
+    QTimer *WorL = new QTimer;
 
 public slots:
     void move();
     void saveNewGame();
+    void winnerOrLoser();
 private slots:
     void on_pushButton_clicked();
     void on_pushButton_4_clicked();

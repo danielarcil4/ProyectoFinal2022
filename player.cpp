@@ -5,22 +5,15 @@
 player::player(int height, int width, QString sprite,int numberPlayer):basicObject(height,width,sprite)
 {
     setNumberPlayer(numberPlayer);
+    connect(recover,&QTimer::timeout,this,&player::recoverVel);
     connect(fall,&QTimer::timeout,this,&player::gravity);
     fall->start(50);
 }
 
-int player::getNumberPlayer() const
-{
-    return numberPlayer;
-}
-
-void player::setNumberPlayer(int value)
-{
-    numberPlayer = value;
-}
 
 player::~player()
 {
+    delete recover;
     delete fall;
     delete pixmap;
 }
@@ -76,6 +69,12 @@ void player::walk(int key)
 
 }
 
+void player::getDamage()
+{
+    setVx(2);
+    recover->start(2000);
+}
+
 void player::gravity()
 {
     if(abs(x()-getCollition())>40)
@@ -87,6 +86,12 @@ void player::gravity()
     }
     else
         setVy(0);
+}
+
+void player::recoverVel()
+{
+    setVx(10);
+    recover->stop();
 }
 
 int player::getVy() const
@@ -127,4 +132,14 @@ int player::getCollition() const
 void player::setCollition(int value)
 {
     collition = value;
+}
+
+int player::getNumberPlayer() const
+{
+    return numberPlayer;
+}
+
+void player::setNumberPlayer(int value)
+{
+    numberPlayer = value;
 }

@@ -1,6 +1,7 @@
 #include "solidblock.h"
 #include <QDebug>
 
+
 solidBlock::solidBlock(int height, int width, QString sprite):basicObject(height,width,sprite)
 {
     connect(timer,&QTimer::timeout,this,&solidBlock::updateFloor);
@@ -16,29 +17,37 @@ void solidBlock::collidingInMove(int key)
 {
     switch (key) {
         case Qt::Key_D:
-            getPtrPlayer()->setX(getPtrPlayer()->x()-getPtrPlayer()->getVx());
+            getPtrPlayers()[0]->setX(getPtrPlayers()[0]->x()-getPtrPlayers()[0]->getVx());
             break;
         case Qt::Key_A:
-            getPtrPlayer()->setX(getPtrPlayer()->x()-getPtrPlayer()->getVx());
+            getPtrPlayers()[0]->setX(getPtrPlayers()[0]->x()-getPtrPlayers()[0]->getVx());
+            break;
+        case Qt::Key_Right:
+            getPtrPlayers()[1]->setX(getPtrPlayers()[1]->x()-getPtrPlayers()[1]->getVx());
+            break;
+        case Qt::Key_Left:
+            getPtrPlayers()[1]->setX(getPtrPlayers()[1]->x()-getPtrPlayers()[1]->getVx());
             break;
     }
+
 }
 
 void solidBlock::updateFloor()
 {
-    if(abs(x()-getPtrPlayer()->x())<40 and abs(y()-getPtrPlayer()->y())>=80){
-        getPtrPlayer()->setFloor(y()-80);
-        if(y()>=665)
-            getPtrPlayer()->setCollition(x());
-    }
+    for(short int i=0;i<getPtrPlayers().length();i++)
+        if(abs(x()-getPtrPlayers()[i]->x())<40 and abs(y()-getPtrPlayers()[i]->y())>=80){
+            getPtrPlayers()[i]->setFloor(y()-80);
+            if(y()>=665)
+                getPtrPlayers()[i]->setCollition(x());
+        }
 }
 
-player *solidBlock::getPtrPlayer() const
+QList<player *> solidBlock::getPtrPlayers() const
 {
-    return ptrPlayer;
+    return ptrPlayers;
 }
 
-void solidBlock::setPtrPlayer(player *value)
+void solidBlock::setPtrPlayers(const QList<player *> &value)
 {
-    ptrPlayer = value;
+    ptrPlayers = value;
 }
