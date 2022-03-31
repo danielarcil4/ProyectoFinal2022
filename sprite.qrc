@@ -6,5 +6,8 @@
         <file>sprites/scorpion.PNG</file>
         <file>sprites/solidBlock.png</file>
         <file>sprites/marsh.png</file>
+        <file>sprites/Botons.png</file>
+        <file>sprites/Menu.png</file>
+        <file>sprites/player2.png</file>
     </qresource>
 </RCC>

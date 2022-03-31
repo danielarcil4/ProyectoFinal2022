@@ -10,19 +10,23 @@ CONFIG += c++11
 
 SOURCES += \
     basicobject.cpp \
+    basicsign.cpp \
     bird.cpp \
     main.cpp \
     mainwindow.cpp \
     marsh.cpp \
+    ownclock.cpp \
     player.cpp \
     scorpion.cpp \
     solidblock.cpp
 
 HEADERS += \
     basicobject.h \
+    basicsign.h \
     bird.h \
     mainwindow.h \
     marsh.h \
+    ownclock.h \
     player.h \
     scorpion.h \
     solidblock.h

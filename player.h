@@ -10,11 +10,11 @@ class player:public basicObject
 {
 private:
     int Vy=0,Vx=10,floor=625;
-    int collition=0;
+    int collition=0,numberPlayer=0;
     QTimer *fall = new QTimer;
     QTimer *timer = new QTimer;
 public:
-    player(int height,int width,QString sprite);
+    player(int height,int width,QString sprite,int numberPlayer);
     ~player();
 
     void walk(int key);
@@ -30,6 +30,9 @@ public:
 
     int getCollition() const;
     void setCollition(int value);
+
+    int getNumberPlayer() const;
+    void setNumberPlayer(int value);
 
 public slots:
     void gravity();

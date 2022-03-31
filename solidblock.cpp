@@ -26,9 +26,6 @@ void solidBlock::collidingInMove(int key)
 
 void solidBlock::updateFloor()
 {
-    /*if(abs(x()-getPtrPlayer()->x())<40 and abs(y()-getPtrPlayer()->y())<=40)
-        getPtrPlayer()->setVx(0);*/
-
     if(abs(x()-getPtrPlayer()->x())<40 and abs(y()-getPtrPlayer()->y())>=80){
         getPtrPlayer()->setFloor(y()-80);
         if(y()>=665)
