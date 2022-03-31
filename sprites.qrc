@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>sprites/MapGame.jpeg</file>
+        <file>sprites/player1.png</file>
+        <file>sprites/solidBlock.png</file>
+        <file>sprites/EnemyBird.png</file>
+        <file>sprites/scorpion.PNG</file>
+    </qresource>
+</RCC>
