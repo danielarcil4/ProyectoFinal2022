@@ -7,13 +7,11 @@ class ownClock:public basicSign
 {
 private:
     QTimer *increase = new QTimer;
-    int timeClock=0;
 public:
     ownClock(QString principalSign,int number);
     ~ownClock();
 
-    int getTimeClock() const;
-    void setTimeClock(int value);
+    QTimer *getIncrease() const;
 
 public slots:
     void counting();

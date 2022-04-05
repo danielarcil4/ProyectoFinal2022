@@ -10,6 +10,7 @@
 #include <QPlainTextEdit>
 #include <QLabel>
 #include <QComboBox>
+#include <QPushButton>
 
 #include "player.h"
 #include "solidblock.h"
@@ -37,12 +38,15 @@ public:
     //game
     void keyPressEvent(QKeyEvent *event);
     void startGame();
+    void LoadGame();
+    void resetGame();
 
     //create
     void createMap();
     void createEnemies();
 
     //delete
+    void deleteLoadGame();
     void deleteNewGame();
     void deleteMenu();
 
@@ -56,11 +60,15 @@ public:
     QString getDifficulty() const;
     void setDifficulty(const QString &value);
 
+    int getInPause() const;
+    void setInPause(int value);
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
     QGraphicsView *view;
     int scenePosX=-500,scenePosY=0;
+    int inPause=0;
 
     //extras
     ownClock *clock;
@@ -73,7 +81,14 @@ private:
     QComboBox *comboBox;
     QLabel *label_3;
     QLabel *label_4;
-    QLabel *winner;
+    QLabel *warning;
+    QPushButton *load;
+
+    //pause
+    QLabel *pause;
+    QPushButton *tryAgainPause;
+    QPushButton *saveGamePause;
+    QPushButton *exitPause;
 
     //Lists
     QList<player*> players;
@@ -85,6 +100,7 @@ private:
     //timers
     QTimer *moving = new QTimer;
     QTimer *WorL = new QTimer;
+
 
 public slots:
     void move();

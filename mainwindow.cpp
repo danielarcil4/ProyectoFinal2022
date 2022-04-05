@@ -24,11 +24,26 @@ MainWindow::MainWindow(QWidget *parent)
     label_4 = new QLabel(this);
     label_4->setVisible(false);
 
+    load = new QPushButton(this);
+    load->setVisible(false);
+
+    warning = new QLabel(this);
+    warning->setVisible(false);
+
+    //player
+    players.push_back(new player(80,50,":/sprites/player1.png",1));
+    players.push_back(new player(80,50,":/sprites/player2.png",2));
+
     connect(ui->pushButton_2, &QPushButton::clicked, this, &MainWindow::saveNewGame);
+    connect(load, &QPushButton::clicked, this, &MainWindow::LoadGame);
 }
 
 MainWindow::~MainWindow()
 {
+    delete pause;
+    delete tryAgainPause;
+    delete saveGamePause;
+    delete exitPause;
     for(short int i=0;i<scorpionEnemies.length();i++)
         delete scorpionEnemies[i];
     for(short int i=0;i<birdEnemies.length();i++)
@@ -42,16 +57,48 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+
 //move and collition with players
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    for(short int i=0;i<players.length();i++)
-        players[i]->walk(event->key());
-    for(short int I=0;I<players.length();I++)
-        for (short int i=0;i<solidBlocks.length();i++)
-            if(abs(solidBlocks[i]->x()-players[I]->x())<40 and abs(solidBlocks[i]->y()-players[I]->y())<=40){
-                solidBlocks[i]->collidingInMove(event->key());
-            }
+    if(event->key()==Qt::Key_Escape){
+        setInPause(getInPause()+1);
+        if(getInPause()%2!=0){
+            pause->setVisible(true);
+            tryAgainPause->setVisible(true);
+            saveGamePause->setVisible(true);
+            exitPause->setVisible(true);
+
+            moving->stop();
+            clock->getIncrease()->stop();
+        }
+        else{
+            pause->setVisible(false);
+            tryAgainPause->setVisible(false);
+            saveGamePause->setVisible(false);
+            exitPause->setVisible(false);
+
+            if(getDifficulty()=="Easy")
+                moving->start(50);
+            else if(getDifficulty()=="Normal")
+                moving->start(40);
+            else if(getDifficulty()=="Hard")
+                moving->start(30);
+            clock->getIncrease()->start(1000);
+        }
+
+    }
+    if(getInPause()%2==0){
+        for(short int i=0;i<players.length();i++)
+            players[i]->walk(event->key());
+        for(short int I=0;I<players.length();I++)
+            for (short int i=0;i<solidBlocks.length();i++)
+                if(abs(solidBlocks[i]->x()-players[I]->x())<40 and abs(solidBlocks[i]->y()-players[I]->y())<=40){
+                    solidBlocks[i]->collidingInMove(event->key());
+                }
+    }
+
 }
 
 void MainWindow::startGame()
@@ -65,19 +112,14 @@ void MainWindow::startGame()
     //scene->setSceneRect(getScenePosX(),getScenePosY(),ui->graphicsView->width(),ui->graphicsView->height());
 
     //create QGraphicsView
+
+    //players
+    for(short int i=0;i<players.length();i++)
+        scene->addItem(players[i]);
+
     view = new QGraphicsView(scene,this);
     view->setGeometry(0,0,1920,1080);
     view->show();
-
-    //player
-    players.push_back(new player(80,50,":/sprites/player1.png",1));
-    players.push_back(new player(80,50,":/sprites/player2.png",2));
-
-    players[0]->setPos(-400,625);
-    players[1]->setPos(-360,625);
-
-    for(short int i=0;i<players.length();i++)
-        scene->addItem(players[i]);
 
     //Map and enemies
     createMap();
@@ -90,14 +132,57 @@ void MainWindow::startGame()
 
     finish = new finishLine(300,200,":/sprites/finishLine.png");
     scene->addItem(finish);
-    finish->setPos(4000,505);
+    finish->setPos(4700,505);
+
+
+    //pause
+    pause = new QLabel(this);
+    pause->setVisible(false);
+    pause->setText("         PAUSE");
+    pause->setGeometry(720,100,350,80);
+    pause->setStyleSheet("font: 32pt Pristina;"
+                         "color: rgb(255, 255, 255);"
+                         "background-color: rgb(0, 0, 0);");
+
+    tryAgainPause = new QPushButton(this);
+    tryAgainPause->setVisible(false);
+    tryAgainPause->setText("  TRY AGAIN");
+    tryAgainPause->setStyleSheet("font: 14pt Pristina;"
+                         "color: rgb(255, 255, 255);"
+                         "background-color: rgb(0, 0, 0);");
+    tryAgainPause->setGeometry(780,200,220,50);
+
+    saveGamePause = new QPushButton(this);
+    saveGamePause->setVisible(false);
+    saveGamePause->setText("  SAVE GAME");
+    saveGamePause->setStyleSheet("font: 14pt Pristina;"
+                         "color: rgb(255, 255, 255);"
+                         "background-color: rgb(0, 0, 0);");
+    saveGamePause->setGeometry(780,280,220,50);
+
+    exitPause = new QPushButton(this);
+    exitPause->setVisible(false);
+    exitPause->setText("  EXIT");
+    exitPause->setStyleSheet("font: 14pt Pristina;"
+                         "color: rgb(255, 255, 255);"
+                         "background-color: rgb(0, 0, 0);");
+    exitPause->setGeometry(780,360,220,50);
 
     //connect and timers
     connect(moving,SIGNAL(timeout()),this,SLOT(move()));
     connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
-    moving->start(50);
+    connect(tryAgainPause, &QPushButton::clicked, this, &MainWindow::resetGame);
+    //connect(saveGamePause, &QPushButton::clicked, this, &MainWindow::LoadGame);
+
+    if(getDifficulty()=="Easy")
+        moving->start(50);
+    else if(getDifficulty()=="Normal")
+        moving->start(40);
+    else if(getDifficulty()=="Hard")
+        moving->start(30);
     WorL->start(1000);
 }
+
 
 void MainWindow::createMap()
 {
@@ -190,11 +275,12 @@ void MainWindow::createEnemies()
 void MainWindow::move()
 {
     setScenePosX(getScenePosX()+2);
-    clock->setPos(clock->x()+2,clock->y());
+    clock->setX(getScenePosX()+500);
     scene->setSceneRect(getScenePosX(),getScenePosY(),view->width()-5,view->height()-5);
 }
 
 void MainWindow::winnerOrLoser(){
+
     for (short int I=0;I<players.length();I++ ){
         if(players[I]->x()>=finish->x())
             switch (players[I]->getNumberPlayer()) {
@@ -251,6 +337,16 @@ void MainWindow::setDifficulty(const QString &value)
     difficulty = value;
 }
 
+int MainWindow::getInPause() const
+{
+    return inPause;
+}
+
+void MainWindow::setInPause(int value)
+{
+    inPause = value;
+}
+
 //clear screen
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -266,13 +362,20 @@ void MainWindow::deleteMenu()
 void MainWindow::deleteNewGame()
 {
     delete ui->pushButton_2;
-    delete ui->label;
-    delete ui->label_2;
     delete comboBox;
     delete label_4;
-    delete textEdit2;
     delete label_3;
+    delete ui->label_2;
+    delete ui->label;
+    delete textEdit2;
     delete textEdit1;
+}
+
+void MainWindow::deleteLoadGame()
+{
+    delete comboBox;
+    delete load;
+    delete ui->label;
 }
 
 //Menu
@@ -325,25 +428,62 @@ void MainWindow::saveNewGame()
 
     else{  
         QFile file("../Proyectofinal2022/DB/games.txt");
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        if (!file.open(QIODevice::ReadOnly |QIODevice::WriteOnly | QIODevice::Text))
             return;
 
-        QTextStream write(&file);
+        QTextStream read(&file);
+        bool duplicateName1=false,duplicateName2=false;
+        QString line = read.readLine();
 
-        //player 1
-        write<<textEdit1->toPlainText()<<'\n'<<"-400,625,0,"<<comboBox->currentText()<<'\n';
-        //player 2
-        write<<textEdit2->toPlainText()<<'\n'<<"-400,625,0,"<<comboBox->currentText()<<'\n';
 
-        deleteNewGame();
-        startGame();
+        while(!line.isEmpty()){
+            if(textEdit1->toPlainText()==line){
+                duplicateName1=true;
+                break;
+            }
+            line = read.readLine();
+        }
+
+        if(duplicateName1){
+            textEdit1->clear();
+            textEdit1->setPlaceholderText(line+" already exist");
+        }
+
+        read.reset();
+        line = read.readLine();
+        while(!line.isEmpty()){
+            if(textEdit2->toPlainText()==line){
+                duplicateName2=true;
+                break;
+            }
+            line = read.readLine();
+        }
+
+        if(duplicateName2){
+            textEdit2->clear();
+            textEdit2->setPlaceholderText(line+" already exist");
+        }
+
+        if(!duplicateName1 and !duplicateName2){
+            QTextStream write(&file);
+
+            //player 1
+            write<<textEdit1->toPlainText()<<'\n'<<"-400,625,0,"<<comboBox->currentText()<<'\n';
+            //player 2 only has his positions
+            write<<textEdit2->toPlainText()<<'\n'<<"-390,625"<<'\n';
+            deleteNewGame();
+            players[0]->setPos(-400,625);
+            players[1]->setPos(-390,625);
+            startGame();
+        }
     }
 }
 
-//load game
+//select saved game
 void MainWindow::on_pushButton_4_clicked()
 {
     deleteMenu();
+    ui->pushButton_2->deleteLater();
 
     QFile file("../Proyectofinal2022/DB/games.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -351,23 +491,77 @@ void MainWindow::on_pushButton_4_clicked()
 
     QTextStream read(&file);
     QString line = read.readLine();
-    QList<QString> loadGame;
 
+
+    //Only read player1's name
     while (!line.isNull()) {
         comboBox->addItem(line);
+        //Statistics player 1
         line = read.readLine();
-        loadGame = line.split(',');
-        players[0]->setPos(loadGame[0].toInt(nullptr,10),loadGame[1].toInt(nullptr,10));
-        clock->setTimeClock(loadGame[2].toInt(nullptr,10));
-        setDifficulty(loadGame[3]);
+        //name player 2
+        read.readLine();
+        //Statistics player 2
+        line = read.readLine();
+        //name player 1
         line = read.readLine();
     }
 
     comboBox->setVisible(true);
     comboBox->setGeometry(250,150,300,30);
 
-    ui->pushButton_2->setGeometry(80,0,300,50);
-    ui->pushButton_2->setText("Load");
+    load->setVisible(true);
+    load->setGeometry(250,200,300,50);
+    load->setStyleSheet("font: 28pt Stencil;"
+                        "border-image: url(:/sprites/Botons.png);");
+    load->setText("Load");
 }
 
+//load Game
+void MainWindow::LoadGame()
+{
+    QFile file("../Proyectofinal2022/DB/games.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
 
+    QList<QString> statistics;
+    QTextStream read(&file);
+
+    QString line = read.readLine();
+    while (!line.isNull()) {
+        if(comboBox->currentText()==line){
+            //statistics player 1
+            line = read.readLine();
+            statistics = line.split(',');
+            players[0]->setPos(statistics[0].toInt(nullptr,10),statistics[1].toInt(nullptr,10));
+            clock->setNumber(statistics[2].toInt(nullptr,10));
+            setDifficulty(statistics[3]);
+            //name player2
+            read.readLine();
+            //statistics player 2
+            line = read.readLine();
+            statistics = line.split(',');
+            players[1]->setPos(statistics[0].toInt(nullptr,10),statistics[1].toInt(nullptr,10));
+            deleteLoadGame();
+            startGame();
+            break;
+        }
+        //statistics player 1
+        read.readLine();
+        //name player 2
+        read.readLine();
+        //statistics player 2
+        read.readLine();
+        //name player 1
+        line = read.readLine();
+    }
+}
+
+//reset game
+void MainWindow::resetGame()
+{
+    players[0]->setPos(-400,625);
+    players[1]->setPos(-380,625);
+    setScenePosX(-500);
+    clock->setX(0);
+    clock->setNumber(0);
+}

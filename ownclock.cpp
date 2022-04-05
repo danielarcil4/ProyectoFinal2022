@@ -17,12 +17,7 @@ void ownClock::counting()
     updateSign(getNumber());
 }
 
-int ownClock::getTimeClock() const
+QTimer *ownClock::getIncrease() const
 {
-    return timeClock;
-}
-
-void ownClock::setTimeClock(int value)
-{
-    timeClock = value;
+    return increase;
 }
