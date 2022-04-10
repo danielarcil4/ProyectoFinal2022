@@ -45,11 +45,11 @@ void player::walk(int key)
         }
     else if(getNumberPlayer()==2)
         switch (key) {
-        case Qt::Key_Up:
+        case Qt::Key_I:
                 if(y()==getFloor())
                     setVy(-80);
                 break;
-            case Qt::Key_Right:
+            case Qt::Key_L:
                 setVx(abs(getVx()));
                 setX(x()+getVx());
 
@@ -57,7 +57,7 @@ void player::walk(int key)
                     setCol(250);
                 updateSprite(getCol()+50,0);
                 break;
-            case Qt::Key_Left:
+            case Qt::Key_J:
                 setVx(-abs(getVx()));
                 setX(x()+getVx());
 

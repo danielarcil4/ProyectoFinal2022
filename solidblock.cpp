@@ -22,10 +22,10 @@ void solidBlock::collidingInMove(int key)
         case Qt::Key_A:
             getPtrPlayers()[0]->setX(getPtrPlayers()[0]->x()-getPtrPlayers()[0]->getVx());
             break;
-        case Qt::Key_Right:
+        case Qt::Key_L:
             getPtrPlayers()[1]->setX(getPtrPlayers()[1]->x()-getPtrPlayers()[1]->getVx());
             break;
-        case Qt::Key_Left:
+        case Qt::Key_J:
             getPtrPlayers()[1]->setX(getPtrPlayers()[1]->x()-getPtrPlayers()[1]->getVx());
             break;
     }

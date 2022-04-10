@@ -40,6 +40,7 @@ public:
     void startGame();
     void LoadGame();
     void resetGame();
+    void saveInPause();
 
     //create
     void createMap();
@@ -63,6 +64,9 @@ public:
     int getInPause() const;
     void setInPause(int value);
 
+    QString getCurrentlyGame() const;
+    void setCurrentlyGame(const QString &value);
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
@@ -74,6 +78,7 @@ private:
     ownClock *clock;
     finishLine *finish;
     QString difficulty="";
+    QString currentlyGame="";
 
     //menu
     QPlainTextEdit *textEdit1;

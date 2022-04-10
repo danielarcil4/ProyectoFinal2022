@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
     players.push_back(new player(80,50,":/sprites/player1.png",1));
     players.push_back(new player(80,50,":/sprites/player2.png",2));
 
+    clock = new ownClock("TIME: ",0);
+
     connect(ui->pushButton_2, &QPushButton::clicked, this, &MainWindow::saveNewGame);
     connect(load, &QPushButton::clicked, this, &MainWindow::LoadGame);
 }
@@ -90,13 +92,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
     }
     if(getInPause()%2==0){
-        for(short int i=0;i<players.length();i++)
+        for(short int i=0;i<players.length();i++){
             players[i]->walk(event->key());
+        }
+
         for(short int I=0;I<players.length();I++)
-            for (short int i=0;i<solidBlocks.length();i++)
-                if(abs(solidBlocks[i]->x()-players[I]->x())<40 and abs(solidBlocks[i]->y()-players[I]->y())<=40){
-                    solidBlocks[i]->collidingInMove(event->key());
-                }
+            for(short int i=0;i<solidBlocks.length();i++)
+                if(abs(solidBlocks[i]->x()-players[I]->x())<40 and abs(solidBlocks[i]->y()-players[I]->y())<=40)
+                    solidBlocks[i]->collidingInMove(event->key());          
     }
 
 }
@@ -112,21 +115,19 @@ void MainWindow::startGame()
     //scene->setSceneRect(getScenePosX(),getScenePosY(),ui->graphicsView->width(),ui->graphicsView->height());
 
     //create QGraphicsView
+    view = new QGraphicsView(scene,this);
+    view->setGeometry(0,0,1920,1080);
+    view->show();
 
     //players
     for(short int i=0;i<players.length();i++)
         scene->addItem(players[i]);
-
-    view = new QGraphicsView(scene,this);
-    view->setGeometry(0,0,1920,1080);
-    view->show();
 
     //Map and enemies
     createMap();
     createEnemies();
 
     //extras
-    clock = new ownClock("TIME: ",0);
     scene->addItem(clock);
     clock->setPos(0,0);
 
@@ -170,9 +171,9 @@ void MainWindow::startGame()
 
     //connect and timers
     connect(moving,SIGNAL(timeout()),this,SLOT(move()));
-    connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
+    //connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
     connect(tryAgainPause, &QPushButton::clicked, this, &MainWindow::resetGame);
-    //connect(saveGamePause, &QPushButton::clicked, this, &MainWindow::LoadGame);
+    connect(saveGamePause, &QPushButton::clicked, this, &MainWindow::saveInPause);
 
     if(getDifficulty()=="Easy")
         moving->start(50);
@@ -180,7 +181,7 @@ void MainWindow::startGame()
         moving->start(40);
     else if(getDifficulty()=="Hard")
         moving->start(30);
-    WorL->start(1000);
+    //WorL->start(1000);
 }
 
 
@@ -280,7 +281,7 @@ void MainWindow::move()
 }
 
 void MainWindow::winnerOrLoser(){
-
+    /*
     for (short int I=0;I<players.length();I++ ){
         if(players[I]->x()>=finish->x())
             switch (players[I]->getNumberPlayer()) {
@@ -301,7 +302,7 @@ void MainWindow::winnerOrLoser(){
                     break;
             }
     }
-
+*/
 }
 
 //other funtions
@@ -345,6 +346,16 @@ int MainWindow::getInPause() const
 void MainWindow::setInPause(int value)
 {
     inPause = value;
+}
+
+QString MainWindow::getCurrentlyGame() const
+{
+    return currentlyGame;
+}
+
+void MainWindow::setCurrentlyGame(const QString &value)
+{
+    currentlyGame = value;
 }
 
 //clear screen
@@ -466,11 +477,13 @@ void MainWindow::saveNewGame()
 
         if(!duplicateName1 and !duplicateName2){
             QTextStream write(&file);
-
             //player 1
             write<<textEdit1->toPlainText()<<'\n'<<"-400,625,0,"<<comboBox->currentText()<<'\n';
-            //player 2 only has his positions
+            //player 2 only has its positions
             write<<textEdit2->toPlainText()<<'\n'<<"-390,625"<<'\n';
+            setCurrentlyGame(textEdit1->toPlainText());
+            setDifficulty(comboBox->currentText());
+
             deleteNewGame();
             players[0]->setPos(-400,625);
             players[1]->setPos(-390,625);
@@ -479,7 +492,7 @@ void MainWindow::saveNewGame()
     }
 }
 
-//select saved game
+//load game in menu
 void MainWindow::on_pushButton_4_clicked()
 {
     deleteMenu();
@@ -516,7 +529,7 @@ void MainWindow::on_pushButton_4_clicked()
     load->setText("Load");
 }
 
-//load Game
+//load selected game
 void MainWindow::LoadGame()
 {
     QFile file("../Proyectofinal2022/DB/games.txt");
@@ -530,6 +543,7 @@ void MainWindow::LoadGame()
     while (!line.isNull()) {
         if(comboBox->currentText()==line){
             //statistics player 1
+            setCurrentlyGame(comboBox->currentText());
             line = read.readLine();
             statistics = line.split(',');
             players[0]->setPos(statistics[0].toInt(nullptr,10),statistics[1].toInt(nullptr,10));
@@ -564,4 +578,27 @@ void MainWindow::resetGame()
     setScenePosX(-500);
     clock->setX(0);
     clock->setNumber(0);
+}
+
+void MainWindow::saveInPause()
+{
+    /*QFile file("../Proyectofinal2022/DB/games.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    QString dataGame = "";
+
+    QTextStream read(&file);
+    QString line = read.readLine();
+    while (!line.isNull()) {
+        dataGame += line;
+    }
+
+    //QTextStream write(&file);
+
+
+    file.remove();
+
+
+    file.close();*/
+
 }
