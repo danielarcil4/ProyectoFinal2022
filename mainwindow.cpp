@@ -30,14 +30,18 @@ MainWindow::MainWindow(QWidget *parent)
     warning = new QLabel(this);
     warning->setVisible(false);
 
+    saveInMenu = new QPushButton(this);
+    saveInMenu->setVisible(false);
+
     //player
     players.push_back(new player(80,50,":/sprites/player1.png",1));
     players.push_back(new player(80,50,":/sprites/player2.png",2));
 
     clock = new ownClock("TIME: ",0);
 
-    connect(ui->pushButton_2, &QPushButton::clicked, this, &MainWindow::saveNewGame);
+    connect(saveInMenu, &QPushButton::clicked, this, &MainWindow::saveNewGame);
     connect(load, &QPushButton::clicked, this, &MainWindow::LoadGame);
+
 }
 
 MainWindow::~MainWindow()
@@ -123,6 +127,8 @@ void MainWindow::startGame()
     for(short int i=0;i<players.length();i++)
         scene->addItem(players[i]);
 
+    //players[0]->setPos(-400,525);
+
     //Map and enemies
     createMap();
     createEnemies();
@@ -174,6 +180,7 @@ void MainWindow::startGame()
     //connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
     connect(tryAgainPause, &QPushButton::clicked, this, &MainWindow::resetGame);
     connect(saveGamePause, &QPushButton::clicked, this, &MainWindow::saveInPause);
+    connect(exitPause, &QPushButton::clicked, this, &MainWindow::exitGame);
 
     if(getDifficulty()=="Easy")
         moving->start(50);
@@ -358,6 +365,16 @@ void MainWindow::setCurrentlyGame(const QString &value)
     currentlyGame = value;
 }
 
+QString MainWindow::getCurrentlyGameP2() const
+{
+    return currentlyGameP2;
+}
+
+void MainWindow::setCurrentlyGameP2(const QString &value)
+{
+    currentlyGameP2 = value;
+}
+
 //clear screen
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -372,7 +389,7 @@ void MainWindow::deleteMenu()
 
 void MainWindow::deleteNewGame()
 {
-    delete ui->pushButton_2;
+    delete saveInMenu;
     delete comboBox;
     delete label_4;
     delete label_3;
@@ -423,8 +440,10 @@ void MainWindow::on_pushButton_clicked()
     comboBox->setVisible(true);
     comboBox->setGeometry(220,380,300,30);
 
-    ui->pushButton_2->setGeometry(50,250,300,50);
-    ui->pushButton_2->setText("Start");
+    saveInMenu->setVisible(true);
+    saveInMenu->setGeometry(220,480,300,50);
+    saveInMenu->setText("Start");
+    saveInMenu->setStyleSheet("font: 28pt Stencil");
 
 }
 
@@ -478,10 +497,11 @@ void MainWindow::saveNewGame()
         if(!duplicateName1 and !duplicateName2){
             QTextStream write(&file);
             //player 1
-            write<<textEdit1->toPlainText()<<'\n'<<"-400,625,0,"<<comboBox->currentText()<<'\n';
+            write<<textEdit1->toPlainText()<<'\n'<<"-400,625,625,0,"<<comboBox->currentText()<<'\n';
             //player 2 only has its positions
-            write<<textEdit2->toPlainText()<<'\n'<<"-390,625"<<'\n';
+            write<<textEdit2->toPlainText()<<'\n'<<"-390,625,625"<<'\n';
             setCurrentlyGame(textEdit1->toPlainText());
+            setCurrentlyGameP2(textEdit2->toPlainText());
             setDifficulty(comboBox->currentText());
 
             deleteNewGame();
@@ -496,7 +516,6 @@ void MainWindow::saveNewGame()
 void MainWindow::on_pushButton_4_clicked()
 {
     deleteMenu();
-    ui->pushButton_2->deleteLater();
 
     QFile file("../Proyectofinal2022/DB/games.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -546,15 +565,18 @@ void MainWindow::LoadGame()
             setCurrentlyGame(comboBox->currentText());
             line = read.readLine();
             statistics = line.split(',');
-            players[0]->setPos(statistics[0].toInt(nullptr,10),statistics[1].toInt(nullptr,10));
-            clock->setNumber(statistics[2].toInt(nullptr,10));
-            setDifficulty(statistics[3]);
+            players[0]->setPos(statistics[0].toInt(),statistics[1].toInt()-20);
+            players[0]->setFloor(statistics[2].toInt());
+            clock->setNumber(statistics[3].toInt());
+            setDifficulty(statistics[4]);
             //name player2
-            read.readLine();
+            line = read.readLine();
+            setCurrentlyGameP2(line);
             //statistics player 2
             line = read.readLine();
             statistics = line.split(',');
-            players[1]->setPos(statistics[0].toInt(nullptr,10),statistics[1].toInt(nullptr,10));
+            players[1]->setPos(statistics[0].toInt(),statistics[1].toInt()-20);
+            players[1]->setFloor(statistics[2].toInt());
             deleteLoadGame();
             startGame();
             break;
@@ -582,7 +604,8 @@ void MainWindow::resetGame()
 
 void MainWindow::saveInPause()
 {
-    /*QFile file("../Proyectofinal2022/DB/games.txt");
+    QFile file("../Proyectofinal2022/DB/games.txt");
+
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
     QString dataGame = "";
@@ -590,15 +613,109 @@ void MainWindow::saveInPause()
     QTextStream read(&file);
     QString line = read.readLine();
     while (!line.isNull()) {
-        dataGame += line;
+        if(line==getCurrentlyGame()){        
+            dataGame+=getCurrentlyGame()+'\n';
+            dataGame+=intToStr(players[0]->x()).remove(' ');
+            dataGame+=",";
+            dataGame+=intToStr(players[0]->y()).remove(' ');
+            dataGame+=",";
+            dataGame+=intToStr(players[0]->getFloor()).remove(' ');
+            dataGame+=",";
+            dataGame+=intToStr(clock->getNumber()).remove(' ');
+            dataGame+=",";
+            dataGame+=getDifficulty()+"\n";
+            dataGame+=getCurrentlyGameP2()+"\n";
+            dataGame+=intToStr(players[1]->x()).remove(' ');
+            dataGame+=",";
+            dataGame+=intToStr(players[1]->y()).remove(' ');
+            dataGame+=",";
+            dataGame+=intToStr(players[1]->getFloor()).remove(' ');
+            dataGame+=+"\n";
+            read.readLine();
+            read.readLine();
+            read.readLine();
+        }
+        else
+            dataGame += line+'\n';
+        line = read.readLine();
+    }
+    file.remove();
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+    QTextStream write(&file);
+
+    write<<dataGame;
+    file.close();
+}
+
+void MainWindow::exitGame()
+{
+    this->close();
+}
+
+
+QString MainWindow::intToStr(int number)
+{
+    QString str="",str2="";
+    int number2=0,i=0;
+
+    if(number<0){
+        number*=-1;
+        str2[i++]='-';
     }
 
-    //QTextStream write(&file);
+    while(number!=0){
+        number2=number/10;
+        number2 = number-(number2*10);
+        str[i++]=number2+48;
+        number/=10;
+    }
 
+    for(int i=str.length();i>0;i--)
+        str2[i]=str[str.length()-i];
 
-    file.remove();
-
-
-    file.close();*/
-
+    return str2;
 }
+
+//delete game
+void MainWindow::on_pushButton_3_clicked()
+{
+    on_pushButton_4_clicked();
+    load->setText("Delete Game");
+    disconnect(load, &QPushButton::clicked, this, &MainWindow::LoadGame);
+    connect(load, &QPushButton::clicked, this, &MainWindow::deleteGame);
+}
+
+void MainWindow::deleteGame()
+{
+    QFile file("../Proyectofinal2022/DB/games.txt");
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    QString dataGame = "";
+
+    QTextStream read(&file);
+    QString line = read.readLine();
+    while (!line.isNull()) {
+        if(line==comboBox->currentText()){
+            read.readLine();
+            read.readLine();
+            read.readLine();
+        }
+        else
+            dataGame += line+'\n';
+        line = read.readLine();
+    }
+    file.remove();
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+    QTextStream write(&file);
+
+    write<<dataGame;
+    file.close();
+    deleteLoadGame();
+    this->close();
+}
+
+
+

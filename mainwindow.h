@@ -41,6 +41,9 @@ public:
     void LoadGame();
     void resetGame();
     void saveInPause();
+    void exitGame();
+    void deleteGame();
+    QString intToStr(int);
 
     //create
     void createMap();
@@ -67,6 +70,9 @@ public:
     QString getCurrentlyGame() const;
     void setCurrentlyGame(const QString &value);
 
+    QString getCurrentlyGameP2() const;
+    void setCurrentlyGameP2(const QString &value);
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
@@ -78,7 +84,7 @@ private:
     ownClock *clock;
     finishLine *finish;
     QString difficulty="";
-    QString currentlyGame="";
+    QString currentlyGame="",currentlyGameP2="";
 
     //menu
     QPlainTextEdit *textEdit1;
@@ -91,6 +97,7 @@ private:
 
     //pause
     QLabel *pause;
+    QPushButton *saveInMenu;
     QPushButton *tryAgainPause;
     QPushButton *saveGamePause;
     QPushButton *exitPause;
@@ -114,5 +121,6 @@ public slots:
 private slots:
     void on_pushButton_clicked();
     void on_pushButton_4_clicked();
+    void on_pushButton_3_clicked();
 };
 #endif // MAINWINDOW_H

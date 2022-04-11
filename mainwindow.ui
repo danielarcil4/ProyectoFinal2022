@@ -106,17 +106,6 @@ border-image: url(:/sprites/Botons.png);</string>
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_2">
-       <property name="styleSheet">
-        <string notr="true">border-image: url(:/sprites/Botons.png);
-font: 28pt &quot;Stencil&quot;;</string>
-       </property>
-       <property name="text">
-        <string>Exit</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </widget>
   </widget>
