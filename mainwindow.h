@@ -85,15 +85,18 @@ private:
     finishLine *finish;
     QString difficulty="";
     QString currentlyGame="",currentlyGameP2="";
+    QGraphicsEllipseItem *decorativeObject;
 
     //menu
     QPlainTextEdit *textEdit1;
     QPlainTextEdit *textEdit2;
-    QComboBox *comboBox;
     QLabel *label_3;
     QLabel *label_4;
+    QLabel *eliminationP1;
+    QLabel *eliminationP2;
     QLabel *warning;
     QPushButton *load;
+    QComboBox *comboBox;
 
     //pause
     QLabel *pause;

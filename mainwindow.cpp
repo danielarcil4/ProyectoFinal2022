@@ -27,9 +27,6 @@ MainWindow::MainWindow(QWidget *parent)
     load = new QPushButton(this);
     load->setVisible(false);
 
-    warning = new QLabel(this);
-    warning->setVisible(false);
-
     saveInMenu = new QPushButton(this);
     saveInMenu->setVisible(false);
 
@@ -46,7 +43,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete pause;
+    delete warning;
+    delete eliminationP1;
+    delete eliminationP2;
     delete tryAgainPause;
     delete saveGamePause;
     delete exitPause;
@@ -76,6 +75,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
             saveGamePause->setVisible(true);
             exitPause->setVisible(true);
 
+            for(short int i=0;i<birdEnemies.length();i++)
+                birdEnemies[i]->getMove()->stop();
+
+            for(short int i=0;i<scorpionEnemies.length();i++)
+                scorpionEnemies[i]->getFire()->stop();
+
             moving->stop();
             clock->getIncrease()->stop();
         }
@@ -84,6 +89,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
             tryAgainPause->setVisible(false);
             saveGamePause->setVisible(false);
             exitPause->setVisible(false);
+
+            for(short int i=0;i<birdEnemies.length();i++)
+                birdEnemies[i]->getMove()->start();
+
+            for(short int i=0;i<scorpionEnemies.length();i++)
+                scorpionEnemies[i]->getFire()->start();
 
             if(getDifficulty()=="Easy")
                 moving->start(50);
@@ -127,8 +138,6 @@ void MainWindow::startGame()
     for(short int i=0;i<players.length();i++)
         scene->addItem(players[i]);
 
-    //players[0]->setPos(-400,525);
-
     //Map and enemies
     createMap();
     createEnemies();
@@ -139,8 +148,25 @@ void MainWindow::startGame()
 
     finish = new finishLine(300,200,":/sprites/finishLine.png");
     scene->addItem(finish);
-    finish->setPos(4700,505);
+    finish->setPos(4400,505);
 
+    eliminationP1 = new QLabel(this);
+    eliminationP1->setVisible(false);
+    eliminationP1->setStyleSheet("font: 14pt Rockwell Condensed;"
+                            "color: rgb(170, 0, 0);");
+    eliminationP1->setGeometry(100,0,220,50);
+
+    eliminationP2 = new QLabel(this);
+    eliminationP2->setVisible(false);
+    eliminationP2->setStyleSheet("font: 14pt Rockwell Condensed;"
+                            "color: rgb(170, 0, 0);");
+    eliminationP2->setGeometry(300,0,220,50);
+
+    warning = new QLabel(this);
+    warning->setVisible(false);
+    warning->setStyleSheet("font: 40pt Rockwell Condensed;"
+                            "color: rgb(170, 0, 0);");
+    warning->setGeometry(850,50,500,500);
 
     //pause
     pause = new QLabel(this);
@@ -175,9 +201,12 @@ void MainWindow::startGame()
                          "background-color: rgb(0, 0, 0);");
     exitPause->setGeometry(780,360,220,50);
 
+    decorativeObject =  new QGraphicsEllipseItem(finish->x(),finish->y(),50,50);
+    decorativeObject->setBrush(Qt::magenta);
+
     //connect and timers
     connect(moving,SIGNAL(timeout()),this,SLOT(move()));
-    //connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
+    connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
     connect(tryAgainPause, &QPushButton::clicked, this, &MainWindow::resetGame);
     connect(saveGamePause, &QPushButton::clicked, this, &MainWindow::saveInPause);
     connect(exitPause, &QPushButton::clicked, this, &MainWindow::exitGame);
@@ -188,7 +217,7 @@ void MainWindow::startGame()
         moving->start(40);
     else if(getDifficulty()=="Hard")
         moving->start(30);
-    //WorL->start(1000);
+    WorL->start(100);
 }
 
 
@@ -288,28 +317,46 @@ void MainWindow::move()
 }
 
 void MainWindow::winnerOrLoser(){
-    /*
     for (short int I=0;I<players.length();I++ ){
         if(players[I]->x()>=finish->x())
-            switch (players[I]->getNumberPlayer()) {
-                case 1:
-                    //winner = new QLabel("player 1 winner",this);
+            switch (I) {
+                case 0:
+                    eliminationP1->setVisible(true);
+                    eliminationP1->setText("Player 1 Won");
                     break;
-                case 2:
-                    //winner = new QLabel("player 2 winner",this);
+                case 1:
+                    eliminationP2->setVisible(true);
+                    eliminationP2->setText("Player 2 Won");
                     break;
             }
-        else if(players[I]->x()<getScenePosX())
-            switch (players[I]->getNumberPlayer()) {
-                case 1:
-                    //winner = new QLabel("player 1 lost",this);
+        if(players[I]->x()<getScenePosX()){
+            switch (I) {
+                case 0:
+                    eliminationP1->setVisible(true);
+                    eliminationP1->setText("Player 1 Eliminated");
+                    players[0]->setVisible(false);
                     break;
-                case 2:
-                    //winner = new QLabel("player 2 lost",this);
+                case 1:
+                    eliminationP2->setVisible(true);
+                    eliminationP2->setText("Player 2 Eliminated");
+                    players[1]->setVisible(false);
                     break;
             }
+        }
     }
-*/
+    if(!players[0]->isVisible() and !players[1]->isVisible()){
+        warning->setVisible(true);
+        warning->setText("You lost");
+        for(short int i=0;i<birdEnemies.length();i++)
+            birdEnemies[i]->getMove()->stop();
+
+        for(short int i=0;i<scorpionEnemies.length();i++)
+            scorpionEnemies[i]->getFire()->stop();
+
+        moving->stop();
+        clock->getIncrease()->stop();
+    }
+
 }
 
 //other funtions
@@ -595,6 +642,11 @@ void MainWindow::LoadGame()
 //reset game
 void MainWindow::resetGame()
 {
+    eliminationP1->setVisible(false);
+    eliminationP2->setVisible(false);
+    warning->setVisible(false);
+    players[0]->setVisible(true);
+    players[1]->setVisible(true);
     players[0]->setPos(-400,625);
     players[1]->setPos(-380,625);
     setScenePosX(-500);

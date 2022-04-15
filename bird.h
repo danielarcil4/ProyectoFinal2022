@@ -39,6 +39,8 @@ public:
     QList<player *> getPtrPlayers() const;
     void setPtrPlayers(const QList<player *> &value);
 
+    QTimer *getMove() const;
+
 private slots:
     void Fly();
 };

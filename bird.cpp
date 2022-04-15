@@ -1,5 +1,10 @@
 #include "bird.h"
 
+QTimer *bird::getMove() const
+{
+    return move;
+}
+
 bird::bird(int height, int width, QString sprite,int x, int y):basicObject(height, width, sprite)
 {
     setPivotPointX(x);
