@@ -201,15 +201,19 @@ void MainWindow::startGame()
                          "background-color: rgb(0, 0, 0);");
     exitPause->setGeometry(780,360,220,50);
 
-    decorativeObject =  new QGraphicsEllipseItem(finish->x(),finish->y(),50,50);
-    decorativeObject->setBrush(Qt::magenta);
+    decorativeObject =  new QGraphicsEllipseItem(0,0,20,20);
+    decorativeObject->setPos(players[0]->x(),players[0]->y());
+    decorativeObject->setBrush(Qt::transparent);
+    scene->addItem(decorativeObject);
 
     //connect and timers
     connect(moving,SIGNAL(timeout()),this,SLOT(move()));
     connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
+    connect(MDO,SIGNAL(timeout()),this,SLOT(moveDecorativeObject()));
     connect(tryAgainPause, &QPushButton::clicked, this, &MainWindow::resetGame);
     connect(saveGamePause, &QPushButton::clicked, this, &MainWindow::saveInPause);
     connect(exitPause, &QPushButton::clicked, this, &MainWindow::exitGame);
+
 
     if(getDifficulty()=="Easy")
         moving->start(50);
@@ -218,6 +222,7 @@ void MainWindow::startGame()
     else if(getDifficulty()=="Hard")
         moving->start(30);
     WorL->start(100);
+    MDO->start(10);
 }
 
 
@@ -359,6 +364,12 @@ void MainWindow::winnerOrLoser(){
 
 }
 
+void MainWindow::moveDecorativeObject()
+{
+    setAngle(getAngle()+1);
+    decorativeObject->setPos(15+players[0]->x()+35*sin(getAngle()*3.1416/180),35+players[0]->y()+54*cos(getAngle()*3.1416/180));
+}
+
 //other funtions
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -420,6 +431,16 @@ QString MainWindow::getCurrentlyGameP2() const
 void MainWindow::setCurrentlyGameP2(const QString &value)
 {
     currentlyGameP2 = value;
+}
+
+int MainWindow::getAngle() const
+{
+    return Angle;
+}
+
+void MainWindow::setAngle(int value)
+{
+    Angle = value;
 }
 
 //clear screen

@@ -73,12 +73,16 @@ public:
     QString getCurrentlyGameP2() const;
     void setCurrentlyGameP2(const QString &value);
 
+    int getAngle() const;
+    void setAngle(int value);
+
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
     QGraphicsView *view;
     int scenePosX=-500,scenePosY=0;
     int inPause=0;
+    int Angle=0;
 
     //extras
     ownClock *clock;
@@ -115,12 +119,14 @@ private:
     //timers
     QTimer *moving = new QTimer;
     QTimer *WorL = new QTimer;
+    QTimer *MDO = new QTimer;
 
 
 public slots:
     void move();
     void saveNewGame();
     void winnerOrLoser();
+    void moveDecorativeObject();
 private slots:
     void on_pushButton_clicked();
     void on_pushButton_4_clicked();
