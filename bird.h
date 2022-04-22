@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <QTimer>
+#include <QMediaPlayer>
 #include "basicobject.h"
 #include "player.h"
 #define MAX_ANGLE 65
@@ -13,6 +14,7 @@ private:
     int angle = 0,lenght=300,changeAngle=5,pivotPointX=0,pivotPointY=0;
     QList<player*> ptrPlayers;
     QTimer *move = new QTimer;
+    QMediaPlayer *hit;
 public:
     bird(int height,int width,QString sprite,int x,int y);
     ~bird();

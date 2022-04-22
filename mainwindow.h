@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QPushButton>
+#include <QMediaPlayer>
 
 #include "player.h"
 #include "solidblock.h"
@@ -19,6 +20,8 @@
 #include "marsh.h"
 #include "ownclock.h"
 #include "finishline.h"
+#include "score.h"
+#include "point.h"
 
 #define numRow 2
 #define numCol numRow*2
@@ -85,6 +88,8 @@ private:
     int Angle=0;
 
     //extras
+    score *scoreP1;
+    score *scoreP2;
     ownClock *clock;
     finishLine *finish;
     QString difficulty="";
@@ -102,7 +107,7 @@ private:
     QPushButton *load;
     QComboBox *comboBox;
 
-    //pause
+    //Pause
     QLabel *pause;
     QPushButton *saveInMenu;
     QPushButton *tryAgainPause;
@@ -115,15 +120,20 @@ private:
     QList<bird*> birdEnemies;
     QList<marsh*> marshEnemies;
     QList<solidBlock*> solidBlocks;
+    QList<point*> points;
 
-    //timers
+    //Timers
     QTimer *moving = new QTimer;
     QTimer *WorL = new QTimer;
     QTimer *MDO = new QTimer;
+    QTimer *IPS = new QTimer;
 
+    //Sounds
+    QMediaPlayer *musicInGame;
 
 public slots:
     void move();
+    void increasPoints();
     void saveNewGame();
     void winnerOrLoser();
     void moveDecorativeObject();

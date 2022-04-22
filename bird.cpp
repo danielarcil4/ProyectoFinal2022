@@ -1,14 +1,12 @@
 #include "bird.h"
 
-QTimer *bird::getMove() const
-{
-    return move;
-}
 
 bird::bird(int height, int width, QString sprite,int x, int y):basicObject(height, width, sprite)
 {
     setPivotPointX(x);
     setPivotPointY(y);
+    hit = new QMediaPlayer;
+    hit->setMedia(QUrl("qrc:/sprites/hit.mp3"));
     connect(move,&QTimer::timeout,this,&bird::Fly);
     move->start(100);
 }
@@ -24,7 +22,7 @@ void bird::beatUpPlayer()
     for(short int i=0;i<getPtrPlayers().length();i++)
         if(abs(x()-getPtrPlayers()[i]->x())<50 and abs(y()-getPtrPlayers()[i]->y())<50){
             getPtrPlayers()[i]->getDamage();
-            //lifeLost->play();
+            hit->play();
         }
 }
 
@@ -110,4 +108,8 @@ QList<player *> bird::getPtrPlayers() const
 void bird::setPtrPlayers(const QList<player *> &value)
 {
     ptrPlayers = value;
+}
+QTimer *bird::getMove() const
+{
+    return move;
 }

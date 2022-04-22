@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,6 +18,8 @@ SOURCES += \
     marsh.cpp \
     ownclock.cpp \
     player.cpp \
+    point.cpp \
+    score.cpp \
     scorpion.cpp \
     solidblock.cpp
 
@@ -30,6 +32,8 @@ HEADERS += \
     marsh.h \
     ownclock.h \
     player.h \
+    point.h \
+    score.h \
     scorpion.h \
     solidblock.h
 
@@ -42,6 +46,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    sprite.qrc
-
-DISTFILES +=
+    sprites.qrc

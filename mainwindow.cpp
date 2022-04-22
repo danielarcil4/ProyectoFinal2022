@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent)
     players.push_back(new player(80,50,":/sprites/player2.png",2));
 
     clock = new ownClock("TIME: ",0);
+    scoreP1 = new score("SCORE Player 1: ",0);
+    scoreP2 = new score("SCORE Player 2: ",0);
 
     connect(saveInMenu, &QPushButton::clicked, this, &MainWindow::saveNewGame);
     connect(load, &QPushButton::clicked, this, &MainWindow::LoadGame);
@@ -49,6 +51,8 @@ MainWindow::~MainWindow()
     delete tryAgainPause;
     delete saveGamePause;
     delete exitPause;
+    for(short int i=0;i<points.length();i++)
+        delete points[i];
     for(short int i=0;i<scorpionEnemies.length();i++)
         delete scorpionEnemies[i];
     for(short int i=0;i<birdEnemies.length();i++)
@@ -144,7 +148,15 @@ void MainWindow::startGame()
 
     //extras
     scene->addItem(clock);
+    scene->addItem(scoreP1);
+    scene->addItem(scoreP2);
     clock->setPos(0,0);
+    scoreP1->setPos(200,0);
+    scoreP2->setPos(600,0);
+    decorativeObject =  new QGraphicsEllipseItem(0,0,20,20);
+    decorativeObject->setPos(players[0]->x(),players[0]->y());
+    scene->addItem(decorativeObject);
+
 
     finish = new finishLine(300,200,":/sprites/finishLine.png");
     scene->addItem(finish);
@@ -201,15 +213,15 @@ void MainWindow::startGame()
                          "background-color: rgb(0, 0, 0);");
     exitPause->setGeometry(780,360,220,50);
 
-    decorativeObject =  new QGraphicsEllipseItem(0,0,20,20);
-    decorativeObject->setPos(players[0]->x(),players[0]->y());
-    decorativeObject->setBrush(Qt::transparent);
-    scene->addItem(decorativeObject);
+    musicInGame = new QMediaPlayer;
+    musicInGame->setMedia(QUrl("qrc:/sprites/MainSound.mp3"));
+    musicInGame->play();
 
     //connect and timers
     connect(moving,SIGNAL(timeout()),this,SLOT(move()));
     connect(WorL,SIGNAL(timeout()),this,SLOT(winnerOrLoser()));
     connect(MDO,SIGNAL(timeout()),this,SLOT(moveDecorativeObject()));
+    connect(IPS,SIGNAL(timeout()),this,SLOT(increasPoints()));
     connect(tryAgainPause, &QPushButton::clicked, this, &MainWindow::resetGame);
     connect(saveGamePause, &QPushButton::clicked, this, &MainWindow::saveInPause);
     connect(exitPause, &QPushButton::clicked, this, &MainWindow::exitGame);
@@ -223,6 +235,7 @@ void MainWindow::startGame()
         moving->start(30);
     WorL->start(100);
     MDO->start(10);
+    IPS->start(100);
 }
 
 
@@ -238,19 +251,27 @@ void MainWindow::createMap()
                     for(short int i=0,inc=1;i<numPiramides;i++,inc-=2)
                         x+=80*numPiramides+inc+200;
                 }
-
                 if(col>=numRow+numPiramides-row and col<=numRow+numPiramides+row){
                     solidBlocks.push_back(new solidBlock(40,40,":/sprites/solidBlock.png"));
                     solidBlocks.back()->setPos(x,y);
+                    //SET POINTS
+                    if(col==numRow+numPiramides-row or col==numRow+numPiramides+row){
+                        points.push_back(new point(17,17,":/sprites/point.png"));
+                        points.back()->setPos(x+14,y-30);
+                    }
+
                 }
             }
-
     //middle piramide
     for(short int row=0,y=545;row<numRow+2;row++,y+=40)
         for(short int col=0,x=1700;col<numCol+4;x+=40,col++)
             if(col>=numRow+2-row and col<=numRow+2+row ){
                 solidBlocks.push_back(new solidBlock(40,40,":/sprites/solidBlock.png"));
                 solidBlocks.back()->setPos(x,y);
+                if(col==numRow+2-row or col==numRow+2+row){
+                    points.push_back(new point(17,17,":/sprites/point.png"));
+                    points.back()->setPos(x+14,y-30);
+                }
             }
 
     //last piramides
@@ -266,6 +287,10 @@ void MainWindow::createMap()
                 if(col>=numRow+numPiramides-row and col<=numRow+numPiramides+row){
                     solidBlocks.push_back(new solidBlock(40,40,":/sprites/solidBlock.png"));
                     solidBlocks.back()->setPos(x,y);
+                    if(col==numRow+numPiramides-row or col==numRow+numPiramides+row){
+                        points.push_back(new point(17,17,":/sprites/point.png"));
+                        points.back()->setPos(x+14,y-30);
+                    }
                 }
             }
 
@@ -274,6 +299,9 @@ void MainWindow::createMap()
         solidBlocks[i]->setPtrPlayers(players);
         scene->addItem(solidBlocks[i]);
     }
+
+    for(short int i=0;i<points.length();i++)
+        scene->addItem(points[i]);
 
 }
 
@@ -318,7 +346,25 @@ void MainWindow::move()
 {
     setScenePosX(getScenePosX()+2);
     clock->setX(getScenePosX()+500);
+    scoreP1->setX(getScenePosX()+800);
+    scoreP2->setX(getScenePosX()+1300);
     scene->setSceneRect(getScenePosX(),getScenePosY(),view->width()-5,view->height()-5);
+}
+
+void MainWindow::increasPoints()
+{
+    for(short int i=0;i<players.length();i++)
+        for(int I=0;I<points.length();I++){
+            if(abs(players[i]->x()-points[I]->x())<=17 and abs(players[i]->y()-points[I]->y())<=50){
+                delete points[I];
+                points.removeAt(I);
+                if(i==0)
+                    scoreP1->increaseScore();
+                else
+                    scoreP2->increaseScore();
+                break;
+            }
+        }
 }
 
 void MainWindow::winnerOrLoser(){
@@ -663,6 +709,60 @@ void MainWindow::LoadGame()
 //reset game
 void MainWindow::resetGame()
 {
+    for(int i=points.length();i>0;i--){
+        delete points[0];
+        points.removeAt(0);
+    }
+    //SET POINTS AGAIN
+    for (short int numPiramides=0;numPiramides<3;numPiramides++)
+        for(short int row=0,y=625-(40*numPiramides);row<numRow+numPiramides;row++,y+=40)
+            for(short int col=0,x=0;col<numCol+(numRow+numPiramides)*2;x+=40,col++){
+                if(col==0){
+                    if(numPiramides==0)
+                        x-=80;
+                    for(short int i=0,inc=1;i<numPiramides;i++,inc-=2)
+                        x+=80*numPiramides+inc+200;
+                }
+                if(col==numRow+numPiramides-row or col==numRow+numPiramides+row){
+                    points.push_back(new point(17,17,":/sprites/point.png"));
+                    points.back()->setPos(x+14,y-30);
+                }
+
+            }
+
+    //middle points
+    for(short int row=0,y=545;row<numRow+2;row++,y+=40)
+        for(short int col=0,x=1700;col<numCol+4;x+=40,col++)
+            if(col==numRow+2-row or col==numRow+2+row){
+                points.push_back(new point(10,10,":/sprites/point.png"));
+                points.back()->setPos(x+14,y-30);
+            }
+
+
+
+    //last points
+    for (short int numPiramides=2;numPiramides>=0;numPiramides--)
+        for(short int row=0,y=625-(40*numPiramides);row<numRow+numPiramides;row++,y+=40)
+            for(short int col=0,x=3500;col<numCol+(numRow+numPiramides)*2;x+=40,col++){
+                if(col==0){
+                    if(numPiramides==0)
+                        x+=80;
+                    for(short int i=0,inc=1;i<numPiramides;i++,inc-=2)
+                        x-=80*numPiramides+inc+300;
+                }
+                if(col==numRow+numPiramides-row or col==numRow+numPiramides+row){
+                    points.push_back(new point(10,10,":/sprites/point.png"));
+                    points.back()->setPos(x+14,y-30);
+                }
+            }
+    //add to scene
+    for(short int i=0;i<points.length();i++)
+        scene->addItem(points[i]);
+
+    scoreP1->setNumber(0);
+    scoreP1->updateSign(0);
+    scoreP2->setNumber(0);
+    scoreP2->updateSign(0);
     eliminationP1->setVisible(false);
     eliminationP2->setVisible(false);
     warning->setVisible(false);

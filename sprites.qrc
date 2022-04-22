@@ -1,9 +1,17 @@
 <RCC>
     <qresource prefix="/">
-        <file>sprites/MapGame.jpeg</file>
-        <file>sprites/player1.png</file>
-        <file>sprites/solidBlock.png</file>
+        <file>sprites/Botons.png</file>
         <file>sprites/EnemyBird.png</file>
+        <file>sprites/finishLine.png</file>
+        <file>sprites/MainSound.mp3</file>
+        <file>sprites/MapGame.jpeg</file>
+        <file>sprites/marsh.png</file>
+        <file>sprites/Menu.png</file>
+        <file>sprites/player1.png</file>
+        <file>sprites/player2.png</file>
+        <file>sprites/point.png</file>
         <file>sprites/scorpion.PNG</file>
+        <file>sprites/solidBlock.png</file>
+        <file>sprites/hit.mp3</file>
     </qresource>
 </RCC>

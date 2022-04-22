@@ -13,6 +13,8 @@ scorpion::scorpion(int height, int width, QString sprite):basicObject(height,wid
     fire->start(50);
     moving->start(250);
     getBullet()->setPos(x(),y()-50);
+    hit = new QMediaPlayer;
+    hit->setMedia(QUrl("qrc:/sprites/hit.mp3"));
 }
 
 scorpion::~scorpion()
@@ -25,8 +27,10 @@ scorpion::~scorpion()
 void scorpion::shot()
 {
     for(short int i=0;i<getPtrPlayers().length();i++)
-        if(abs(getBullet()->x()-getPtrPlayers()[i]->x())<20 and abs(getBullet()->y()-getPtrPlayers()[i]->y())<20)
+        if(abs(getBullet()->x()-getPtrPlayers()[i]->x())<10 and abs(getBullet()->y()-getPtrPlayers()[i]->y())<60){
             getPtrPlayers()[i]->getDamage();
+            hit->play();
+        }
 
     setT(getT()+0.2);
     getBullet()->setPos(getBullet()->x()+Vx*cos(ANGLE*3.1416/180)*getT(),getBullet()->y()-Vy*sin(ANGLE*3.1416/180)*getT()+4.9*pow(getT(),2));

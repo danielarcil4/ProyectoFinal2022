@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <math.h>
 #include <QPainter>
+#include <QMediaPlayer>
 
 #include "basicobject.h"
 #include "player.h"
@@ -17,6 +18,7 @@ private:
     QTimer *moving = new QTimer;
     float t=0.0;
     int Vx=8,Vy=25;
+    QMediaPlayer *hit;
     QList<player *> ptrPlayers;
     QGraphicsEllipseItem *bullet = new QGraphicsEllipseItem(x(),y(),10,10);
 
