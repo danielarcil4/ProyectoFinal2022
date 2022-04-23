@@ -130,6 +130,7 @@ private:
 
     //Sounds
     QMediaPlayer *musicInGame;
+    QMediaPlayer *victory;
 
 public slots:
     void move();

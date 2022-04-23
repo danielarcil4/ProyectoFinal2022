@@ -13,5 +13,6 @@
         <file>sprites/scorpion.PNG</file>
         <file>sprites/solidBlock.png</file>
         <file>sprites/hit.mp3</file>
+        <file>sprites/victory.mp3</file>
     </qresource>
 </RCC>

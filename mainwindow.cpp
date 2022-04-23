@@ -35,8 +35,8 @@ MainWindow::MainWindow(QWidget *parent)
     players.push_back(new player(80,50,":/sprites/player2.png",2));
 
     clock = new ownClock("TIME: ",0);
-    scoreP1 = new score("SCORE Player 1: ",0);
-    scoreP2 = new score("SCORE Player 2: ",0);
+    scoreP1 = new score("SCORE Player 1  ",0);
+    scoreP2 = new score("SCORE Player 2  ",0);
 
     connect(saveInMenu, &QPushButton::clicked, this, &MainWindow::saveNewGame);
     connect(load, &QPushButton::clicked, this, &MainWindow::LoadGame);
@@ -132,19 +132,23 @@ void MainWindow::startGame()
     scene = new QGraphicsScene;
     scene->setBackgroundBrush(QBrush(QImage(":/sprites/MapGame.jpeg")));
     //scene->setSceneRect(getScenePosX(),getScenePosY(),ui->graphicsView->width(),ui->graphicsView->height());
+    //-----------------------------------------------------------------
 
     //create QGraphicsView
     view = new QGraphicsView(scene,this);
     view->setGeometry(0,0,1920,1080);
     view->show();
+    //---------------------------------------
 
     //players
     for(short int i=0;i<players.length();i++)
         scene->addItem(players[i]);
+    //----------------------------------------
 
     //Map and enemies
     createMap();
     createEnemies();
+    //----------------------------------------
 
     //extras
     scene->addItem(clock);
@@ -157,10 +161,10 @@ void MainWindow::startGame()
     decorativeObject->setPos(players[0]->x(),players[0]->y());
     scene->addItem(decorativeObject);
 
-
     finish = new finishLine(300,200,":/sprites/finishLine.png");
     scene->addItem(finish);
     finish->setPos(4400,505);
+    //--------------------------------------------------------
 
     eliminationP1 = new QLabel(this);
     eliminationP1->setVisible(false);
@@ -212,10 +216,16 @@ void MainWindow::startGame()
                          "color: rgb(255, 255, 255);"
                          "background-color: rgb(0, 0, 0);");
     exitPause->setGeometry(780,360,220,50);
+    //--------------------------------------------------------
 
+    //music
     musicInGame = new QMediaPlayer;
     musicInGame->setMedia(QUrl("qrc:/sprites/MainSound.mp3"));
-    musicInGame->play();
+    //musicInGame->play();
+
+    victory = new QMediaPlayer;
+    victory->setMedia(QUrl("qrc:/sprites/victory.mp3"));
+    //-------------------------------------------------------
 
     //connect and timers
     connect(moving,SIGNAL(timeout()),this,SLOT(move()));
@@ -236,6 +246,7 @@ void MainWindow::startGame()
     WorL->start(100);
     MDO->start(10);
     IPS->start(100);
+    //-----------------------------------------------------------
 }
 
 
@@ -255,7 +266,8 @@ void MainWindow::createMap()
                     solidBlocks.push_back(new solidBlock(40,40,":/sprites/solidBlock.png"));
                     solidBlocks.back()->setPos(x,y);
                     //SET POINTS
-                    if(col==numRow+numPiramides-row or col==numRow+numPiramides+row){
+                    if((col==numRow+numPiramides-row or col==numRow+numPiramides+row) and
+                            (x>players[0]->x() and x>players[1]->x())){
                         points.push_back(new point(17,17,":/sprites/point.png"));
                         points.back()->setPos(x+14,y-30);
                     }
@@ -368,18 +380,32 @@ void MainWindow::increasPoints()
 }
 
 void MainWindow::winnerOrLoser(){
+
     for (short int I=0;I<players.length();I++ ){
-        if(players[I]->x()>=finish->x())
+        //win
+        if(players[I]->x()>=finish->x()){
+            warning->setVisible(true);
             switch (I) {
                 case 0:
-                    eliminationP1->setVisible(true);
-                    eliminationP1->setText("Player 1 Won");
+                    warning->setText("Player 1 won");
                     break;
                 case 1:
-                    eliminationP2->setVisible(true);
-                    eliminationP2->setText("Player 2 Won");
+                    warning->setText("Player 2 won");
                     break;
             }
+            for(short int i=0;i<birdEnemies.length();i++)
+                birdEnemies[i]->getMove()->stop();
+
+            for(short int i=0;i<scorpionEnemies.length();i++)
+                scorpionEnemies[i]->getFire()->stop();
+
+            moving->stop();
+            clock->getIncrease()->stop();
+            victory->play();
+        }
+        //-------------------------------------------------------
+
+        //lose
         if(players[I]->x()<getScenePosX()){
             switch (I) {
                 case 0:
@@ -407,9 +433,11 @@ void MainWindow::winnerOrLoser(){
         moving->stop();
         clock->getIncrease()->stop();
     }
+    //-----------------------------------------------------------
 
 }
 
+//uniform circular motion
 void MainWindow::moveDecorativeObject()
 {
     setAngle(getAngle()+1);
@@ -418,6 +446,28 @@ void MainWindow::moveDecorativeObject()
 
 //other funtions
 //----------------------------------------------------------------------------------------------------------------------
+QString MainWindow::intToStr(int number)
+{
+    QString str="",str2="";
+    int number2=0,i=0;
+
+    if(number<0){
+        number*=-1;
+        str2[i++]='-';
+    }
+
+    while(number!=0){
+        number2=number/10;
+        number2 = number-(number2*10);
+        str[i++]=number2+48;
+        number/=10;
+    }
+
+    for(int i=str.length();i>0;i--)
+        str2[i]=str[str.length()-i];
+
+    return str2;
+}
 
 int MainWindow::getScenePosX() const
 {
@@ -488,10 +538,9 @@ void MainWindow::setAngle(int value)
 {
     Angle = value;
 }
+//---------------------------------------------------------------------------------------------------------------------
 
 //clear screen
-//----------------------------------------------------------------------------------------------------------------------
-
 //delete all but one botton ,label and background
 void MainWindow::deleteMenu()
 {
@@ -519,9 +568,9 @@ void MainWindow::deleteLoadGame()
     delete load;
     delete ui->label;
 }
+//----------------------------------------------------------------------------------------------------------------------
 
 //Menu
-//----------------------------------------------------------------------------------------------------------------------
 
 //new game
 void MainWindow::on_pushButton_clicked()
@@ -682,7 +731,9 @@ void MainWindow::LoadGame()
             players[0]->setPos(statistics[0].toInt(),statistics[1].toInt()-20);
             players[0]->setFloor(statistics[2].toInt());
             clock->setNumber(statistics[3].toInt());
-            setDifficulty(statistics[4]);
+            scoreP1->setNumber(statistics[4].toInt());
+            scoreP1->updateSign(statistics[4].toInt());
+            setDifficulty(statistics[5]);
             //name player2
             line = read.readLine();
             setCurrentlyGameP2(line);
@@ -691,6 +742,8 @@ void MainWindow::LoadGame()
             statistics = line.split(',');
             players[1]->setPos(statistics[0].toInt(),statistics[1].toInt()-20);
             players[1]->setFloor(statistics[2].toInt());
+            scoreP2->setNumber(statistics[3].toInt());
+            scoreP2->updateSign(statistics[3].toInt());
             deleteLoadGame();
             startGame();
             break;
@@ -729,6 +782,7 @@ void MainWindow::resetGame()
                 }
 
             }
+    //----------------------------------------------------------------------------------
 
     //middle points
     for(short int row=0,y=545;row<numRow+2;row++,y+=40)
@@ -737,7 +791,7 @@ void MainWindow::resetGame()
                 points.push_back(new point(10,10,":/sprites/point.png"));
                 points.back()->setPos(x+14,y-30);
             }
-
+    //----------------------------------------------------------------------------------
 
 
     //last points
@@ -755,6 +809,8 @@ void MainWindow::resetGame()
                     points.back()->setPos(x+14,y-30);
                 }
             }
+    //-----------------------------------------------------------------------------------
+
     //add to scene
     for(short int i=0;i<points.length();i++)
         scene->addItem(points[i]);
@@ -773,6 +829,7 @@ void MainWindow::resetGame()
     setScenePosX(-500);
     clock->setX(0);
     clock->setNumber(0);
+    //----------------------------------------------------------------------------------
 }
 
 void MainWindow::saveInPause()
@@ -796,6 +853,8 @@ void MainWindow::saveInPause()
             dataGame+=",";
             dataGame+=intToStr(clock->getNumber()).remove(' ');
             dataGame+=",";
+            dataGame+=intToStr(scoreP1->getNumber()).remove(' ');
+            dataGame+=",";
             dataGame+=getDifficulty()+"\n";
             dataGame+=getCurrentlyGameP2()+"\n";
             dataGame+=intToStr(players[1]->x()).remove(' ');
@@ -803,6 +862,8 @@ void MainWindow::saveInPause()
             dataGame+=intToStr(players[1]->y()).remove(' ');
             dataGame+=",";
             dataGame+=intToStr(players[1]->getFloor()).remove(' ');
+            dataGame+=",";
+            dataGame+=intToStr(scoreP2->getNumber()).remove(' ');
             dataGame+=+"\n";
             read.readLine();
             read.readLine();
@@ -824,30 +885,6 @@ void MainWindow::saveInPause()
 void MainWindow::exitGame()
 {
     this->close();
-}
-
-
-QString MainWindow::intToStr(int number)
-{
-    QString str="",str2="";
-    int number2=0,i=0;
-
-    if(number<0){
-        number*=-1;
-        str2[i++]='-';
-    }
-
-    while(number!=0){
-        number2=number/10;
-        number2 = number-(number2*10);
-        str[i++]=number2+48;
-        number/=10;
-    }
-
-    for(int i=str.length();i>0;i--)
-        str2[i]=str[str.length()-i];
-
-    return str2;
 }
 
 //delete game

@@ -27,7 +27,7 @@ scorpion::~scorpion()
 void scorpion::shot()
 {
     for(short int i=0;i<getPtrPlayers().length();i++)
-        if(abs(getBullet()->x()-getPtrPlayers()[i]->x())<10 and abs(getBullet()->y()-getPtrPlayers()[i]->y())<60){
+        if(abs(getBullet()->x()-getPtrPlayers()[i]->x())<10 and abs(getBullet()->y()-getPtrPlayers()[i]->y())<30){
             getPtrPlayers()[i]->getDamage();
             hit->play();
         }
